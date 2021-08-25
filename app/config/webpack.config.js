@@ -420,6 +420,11 @@ module.exports = function(webpackEnv) {
                     { helpers: true },
                   ],
                 ],
+                plugins: [
+                  "@babel/plugin-proposal-class-properties",
+                  "@babel/plugin-syntax-bigint",
+                  "@babel/plugin-proposal-nullish-coalescing-operator"
+                ],
                 cacheDirectory: true,
                 // See #6846 for context on why cacheCompression is disabled
                 cacheCompression: false,
