@@ -2,13 +2,18 @@ import React, { useContext, useEffect, useState } from "react";
 import { DrizzleContext } from "@drizzle/react-plugin";
 
 
-export default ({ answer, index, setStatus }) => {
+export default ({ answer, index, setStatus, account }) => {
     const { drizzle, drizzleState, initialized } = useContext(DrizzleContext.Context);
 
     const voteOnChain = async() => {
         const contract = drizzle.contracts.Voting;
+        console.log(drizzleState.accounts)
         try {
-            await contract.methods["vote"](index).send({ from: drizzleState.accounts[2] });
+            setStatus("Voting in progress...")
+            await contract.methods["vote"](index).send({ 
+                gas: 6000000,
+                from: account
+            });
             setStatus("Successfully voted!")
         } catch (err) {
             console.log(err.message);
