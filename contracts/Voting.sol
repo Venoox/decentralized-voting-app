@@ -38,11 +38,15 @@ contract Voting {
     }
 
     function vote(uint256 index) public {
+        /* Disabled due to Godwoken's issues
         require(startTimestamp <= block.timestamp, "Voting hasn't started");
         require(endTimestamp >= block.timestamp, "Voting has ended!");
+        */
         require(index < answers.length, "No answer with that index");
+        /* Disabled for testing
         require(voters[msg.sender].registered == true, "You need to be approved for voting!");
         require(voters[msg.sender].voted == false, "You already answered this question");
+        */
         answers[index].count += 1;
         voters[msg.sender].voted = true;
     }

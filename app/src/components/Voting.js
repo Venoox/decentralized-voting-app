@@ -15,9 +15,10 @@ export default () => {
     votersCount: null,
   })
   const [status, setStatus] = useState("")
-  const [account, setAccount] = useState("")
+  const [ethAddress, setEthAddress] = useState("")
+  const [balance, setBalance] = useState(null)
 
-  const polyjuiceAddress = addressTranslator.ethAddressToGodwokenShortAddress(account);
+  const polyjuiceAddress = ethAddress ? addressTranslator.ethAddressToGodwokenShortAddress(ethAddress) : "";
 
   useEffect(() => {
     if (initialized) {
@@ -33,13 +34,26 @@ export default () => {
     }
   }, [initialized]);
 
+  useEffect(() => {
+    if (ethAddress) {
+      getBalance();
+    }
+  }, [ethAddress]);
+
+  async function getBalance() {
+    /* global BigInt */
+    const balance = BigInt(await drizzle.web3.eth.getBalance(ethAddress));
+    setBalance(balance)
+  }
+
   async function connect() {
     if (typeof window.ethereum !== 'undefined') {
       console.log('MetaMask is installed!');
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
-        setAccount(window.ethereum.selectedAddress)
+        setEthAddress(window.ethereum.selectedAddress)
       } catch(err) {
+        window.alert("Error connecting to the wallet, please refresh")
         console.log(err)
       }
     }
@@ -60,14 +74,15 @@ export default () => {
     <div className="App">
       <div className="section">
         <h2>Voting</h2>
-        <div>ETH address: {account}</div>
-        <div>Polyjuice address: {account}</div>
-
+        <div>ETH address: {ethAddress}</div>
+        <div>Polyjuice address: {polyjuiceAddress}</div>
+        <div>L2 Balance: {balance ? (balance / 10n ** 8n).toString() : ""} CKB</div>
+        <br />
         <div>{question && question.value}</div>
         <div>Registered voter count: {votersCount && votersCount.value}</div>
         <div>Voting start at: {startTimestamp && new Date(startTimestamp.value*1000).toLocaleString()}</div>
         <div>Voting ends at: {endTimestamp && new Date(endTimestamp.value*1000).toLocaleString()}</div>
-        <div style={{display: "flex"}}>{answers && answers.value.map((answer, index) => <VoteButton key={answer.answer} index={index} answer={answer} setStatus={setStatus} account={account}/>)}</div>
+        <div style={{display: "flex"}}>{answers && answers.value.map((answer, index) => <VoteButton key={answer.answer} index={index} answer={answer} setStatus={setStatus} account={ethAddress}/>)}</div>
         <div>{status}</div>
       </div>
     </div>

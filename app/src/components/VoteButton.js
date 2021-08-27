@@ -7,7 +7,6 @@ export default ({ answer, index, setStatus, account }) => {
 
     const voteOnChain = async() => {
         const contract = drizzle.contracts.Voting;
-        console.log(drizzleState.accounts)
         try {
             setStatus("Voting in progress...")
             await contract.methods["vote"](index).send({ 

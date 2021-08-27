@@ -1,12 +1,13 @@
 const path = require("path");
 const { PolyjuiceHDWalletProvider } = require('@polyjuice-provider/truffle');
 const { PolyjuiceHttpProvider } = require("@polyjuice-provider/web3");
+const CONFIG = require('./app/src/config');
 
-const godwokenRpcUrl = "https://godwoken-testnet-web3-rpc.ckbapp.dev";
+const godwokenRpcUrl = CONFIG.WEB3_PROVIDER_URL;
 const providerConfig = {
-  rollupTypeHash: '0x4cc2e6526204ae6a2e8fcf12f7ad472f41a1606d5b9624beebd215d780809f6a',
-  ethAccountLockCodeHash: '0xdeec13a7b8e100579541384ccaf4b5223733e4a5483c3aec95ddc4c1d5ea5b22',
-  web3Url: godwokenRpcUrl
+    rollupTypeHash: CONFIG.ROLLUP_TYPE_HASH,
+    ethAccountLockCodeHash: CONFIG.ETH_ACCOUNT_LOCK_CODE_HASH,
+    web3Url: godwokenRpcUrl
 };
 
 
@@ -20,13 +21,13 @@ module.exports = {
       port: 8545,
       network_id: "*"
     },
-    godswoken: {
+    godwoken: {
       provider: function() {
         const polyjuiceHttpProvider = new PolyjuiceHttpProvider(godwokenRpcUrl, providerConfig);
         return new PolyjuiceHDWalletProvider(
         [
           { 
-            mnemonic: "melt kind chicken alert fiscal plug zero hint magic hat faculty swallow",
+            mnemonic: CONFIG.MNEMONIC,
             providerOrUrl: polyjuiceHttpProvider
           }
         ],

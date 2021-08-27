@@ -24,6 +24,7 @@
     "@openzeppelin/contracts": "^2.4.0",
     "@polyjuice-provider/truffle": "0.0.1-rc7",
     "@polyjuice-provider/web3": "0.0.1-rc7",
+    "nervos-godwoken-integration": "^0.0.6",
     "solc": "^0.8.6",
     "truffle": "^5.3.14"
   }
