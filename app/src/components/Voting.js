@@ -1,9 +1,12 @@
+/* global BigInt */
 import React, { useContext, useEffect, useState } from "react";
 import { DrizzleContext } from "@drizzle/react-plugin";
 import { AddressTranslator } from 'nervos-godwoken-integration';
 import VoteButton from "./VoteButton";
+import CompiledContractArtifact from '../ERC20/ERC20.json';
 
 const addressTranslator = new AddressTranslator();
+const SUDT_PROXY_CONTRACT_ADDRESS = '0x663C3716AD9AE3B08D444DD720AA196B8B45e60b';
 
 export default () => {
   const { drizzle, drizzleState, initialized } = useContext(DrizzleContext.Context);
@@ -17,6 +20,8 @@ export default () => {
   const [status, setStatus] = useState("")
   const [ethAddress, setEthAddress] = useState("")
   const [balance, setBalance] = useState(null)
+  const [depositAddress, setDepositAddress] = useState("")
+  const [SUDTBalance, setSUDTBalance] = useState(null)
 
   const polyjuiceAddress = ethAddress ? addressTranslator.ethAddressToGodwokenShortAddress(ethAddress) : "";
 
@@ -36,14 +41,28 @@ export default () => {
 
   useEffect(() => {
     if (ethAddress) {
-      getBalance();
+      getLayer2DepositAddress();
+      const id = setInterval(getBalance, 5000);
+      return () => clearInterval(id);
     }
   }, [ethAddress]);
 
   async function getBalance() {
-    /* global BigInt */
-    const balance = BigInt(await drizzle.web3.eth.getBalance(ethAddress));
-    setBalance(balance)
+    if (ethAddress && polyjuiceAddress) {
+      const balance = BigInt(await drizzle.web3.eth.getBalance(ethAddress));
+      setBalance(balance)
+      
+      const contract = new drizzle.web3.eth.Contract(CompiledContractArtifact.abi, SUDT_PROXY_CONTRACT_ADDRESS);
+      const SUDT = await contract.methods.balanceOf(polyjuiceAddress).call({
+        from: ethAddress
+      })
+      setSUDTBalance(BigInt(SUDT));
+    }
+  }
+
+  async function getLayer2DepositAddress() {
+    const deposit = await addressTranslator.getLayer2DepositAddress(drizzle.web3, ethAddress)
+    setDepositAddress(deposit.addressString);
   }
 
   async function connect() {
@@ -72,11 +91,19 @@ export default () => {
 
   return (
     <div className="App">
-      <div className="section">
+      <div className="section" style={{lineBreak: "anywhere"}}>
         <h2>Voting</h2>
         <div>ETH address: {ethAddress}</div>
         <div>Polyjuice address: {polyjuiceAddress}</div>
-        <div>L2 Balance: {balance ? (balance / 10n ** 8n).toString() : ""} CKB</div>
+        <div>L2 Balance: {balance ? (Number(balance) / 10 ** 8).toString() : ""} CKB</div>
+        <br />
+        <div>
+          <div>Deposit address: {depositAddress}</div>
+          <a href={`https://force-bridge-test.ckbapp.dev/bridge/Ethereum/Nervos?xchain-asset=0x0000000000000000000000000000000000000000&recipient=${depositAddress ? depositAddress : ""}`}>
+            Click here to use Force Bridge to deposit to Layer 2 
+          </a>
+          <div>ckETH balance: {SUDTBalance ? (Number(SUDTBalance) / 10 ** 18).toString() : ""} ckETH</div>
+        </div>
         <br />
         <div>{question && question.value}</div>
         <div>Registered voter count: {votersCount && votersCount.value}</div>
